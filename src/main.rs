@@ -9,22 +9,17 @@ mod utils {
 use data::loader;
 
 fn main() {
-    let dataset = loader::load_from_csv(
-        "assets/Pokemon.csv", // download from https://www.kaggle.com/datasets/abcsds/pokemon?resource=download
-        (0.5, 0.25, 0.25), 
-        vec!["Attack", "Defense", "Speed", "Sp. Atk", "Sp. Def"],
-        "HP",
-        false
-    ).unwrap();
+    let file_path = "assets/ML-CUP24-TR.csv";
+    let num_features = 11;
+    let features: Vec<String> = (1..=num_features).map(|x| format!("FEATURE_{:?}", x)).collect();
+    let targets: Vec<String> = vec!["x", "y", "z"].into_iter().map(|x| format!("TARGET_{}", x)).collect();
 
-    let training_size = dataset.training.len();
-    let validation_size = dataset.validation.len();
-    let test_size = dataset.test.len();
-    
+    println!("Loading data from file: {}...", file_path);
+    println!("Features: {:?}", features);
+    println!("Targets: {:?}", targets);
 
-    println!("Training size: {}", training_size);
-    println!("Validation size: {}", validation_size);
-    println!("Test size: {}", test_size);
+    let (X_train, Y_train) = loader::load_from_csv(file_path, features, targets, true, None).unwrap(); 
 
-    println!("{:?}", dataset);
+    println!("X_train: {:?}", X_train);
+    println!("Y_train: {:?}", Y_train);
 }

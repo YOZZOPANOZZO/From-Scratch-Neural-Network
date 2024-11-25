@@ -1,35 +1,71 @@
-pub fn softmax(input: &Vec<f64>) -> Vec<f64> {
-    let sum: f64 = input.iter().map(|x| x.exp()).sum();
-    input.iter().map(|x| x.exp() / sum).collect()
+pub trait Activation {
+    fn forward(&self, input: f64) -> f64;
+    fn backward(&self, input: f64) -> f64;
 }
 
-pub fn softmax_derivative(input: &Vec<f64>) -> Vec<f64> {
-    let softmax = softmax(input);
-    softmax.iter().zip(softmax.iter()).map(|(x, y)| x * (1.0 - y)).collect()
+pub struct Sigmoid;
+
+impl Activation for Sigmoid {
+    fn forward(&self, input: f64) -> f64 {
+        1.0 / (1.0 + (-input).exp())
+    }
+
+    fn backward(&self, input: f64) -> f64 {
+        let sigmoid = self.forward(input);
+        sigmoid * (1.0 - sigmoid)
+    }
 }
 
-pub fn relu(input: &Vec<f64>) -> Vec<f64> {
-    input.iter().map(|x| x.max(0.0)).collect()
+pub struct ReLU;
+
+impl Activation for ReLU {
+    fn forward(&self, input: f64) -> f64 {
+        input.max(0.0)
+    }
+
+    fn backward(&self, input: f64) -> f64 {
+        if input > 0.0 {
+            1.0
+        } else {
+            0.0
+        }
+    }
 }
 
-pub fn relu_derivative(input: &Vec<f64>) -> Vec<f64> {
-    input.iter().map(|x| if *x > 0.0 { 1.0 } else { 0.0 }).collect()
+pub struct Tanh;
+
+impl Activation for Tanh {
+    fn forward(&self, input: f64) -> f64 {
+        input.tanh()
+    }
+
+    fn backward(&self, input: f64) -> f64 {
+        let tanh = self.forward(input);
+        1.0 - tanh.powi(2)
+    }
 }
 
-pub fn sigmoid(input: &Vec<f64>) -> Vec<f64> {
-    input.iter().map(|x| 1.0 / (1.0 + (-x).exp())).collect()
+pub struct Softmax;
+
+impl Activation for Softmax {
+    fn forward(&self, input: f64) -> f64 {
+        input.exp()
+    }
+
+    fn backward(&self, input: f64) -> f64 {
+        let softmax = self.forward(input);
+        softmax * (1.0 - softmax)
+    }
 }
 
-pub fn sigmoid_derivative(input: &Vec<f64>) -> Vec<f64> {
-    let sigmoid = sigmoid(input);
-    sigmoid.iter().zip(sigmoid.iter()).map(|(x, y)| x * (1.0 - y)).collect()
-}
+pub struct Linear;
 
-pub fn tanh(input: &Vec<f64>) -> Vec<f64> {
-    input.iter().map(|x| x.tanh()).collect()
-}
+impl Activation for Linear {
+    fn forward(&self, input: f64) -> f64 {
+        input
+    }
 
-pub fn tanh_derivative(input: &Vec<f64>) -> Vec<f64> {
-    let tanh = tanh(input);
-    tanh.iter().zip(tanh.iter()).map(|(x, y)| 1.0 - y.powi(2)).collect()
+    fn backward(&self, _input: f64) -> f64 {
+        1.0
+    }
 }

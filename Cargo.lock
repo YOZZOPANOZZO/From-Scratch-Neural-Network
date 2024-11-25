@@ -19,6 +19,7 @@ name = "from-scratch-neural-network"
 version = "0.1.0"
 dependencies = [
  "rand",
+ "rand_core",
 ]
 
 [[package]]
