@@ -3,14 +3,14 @@ use rand_core::SeedableRng;
 use rand::Rng;
 use std::io;
 
-
 pub fn load_from_csv(
     file_path: &str,
     features: Vec<String>,
     targets: Vec<String>,
     shuffle: bool,
     random_seed: Option<u64>,
-) -> io::Result<(Vec<Vec<f64>>, Vec<Vec<f64>>)> {
+    train_split: f32,
+) -> io::Result<(Vec<Vec<f64>>, Vec<Vec<f64>>, Vec<Vec<f64>>, Vec<Vec<f64>>)> {
     let mut X = vec![];
     let mut Y = vec![];
 
@@ -28,7 +28,6 @@ pub fn load_from_csv(
         })
     }).collect::<Result<Vec<_>, _>>()?;
 
-
     let target_indices: Vec<usize> = targets.iter().map(|target| {
         headers.iter().position(|column| column == target.as_str()).ok_or_else(|| {
             io::Error::new(io::ErrorKind::InvalidInput, format!("Target '{}' not found in headers", target))
@@ -37,7 +36,6 @@ pub fn load_from_csv(
 
     for line in lines {
         if let Ok(line) = line {
-
             let row: Vec<f64> = line.split(",").map(|x| {
                 if let Ok(x) = x.parse::<f64>() {
                     x
@@ -49,7 +47,7 @@ pub fn load_from_csv(
             if row.len() != headers.len() {
                 return Err(io::Error::new(io::ErrorKind::InvalidData, "Row length does not match header length"));
             }
-            let labels:Vec<f64>  = target_indices.iter().map(|&index| row[index]).collect();
+            let labels: Vec<f64> = target_indices.iter().map(|&index| row[index]).collect();
             let features: Vec<f64> = feature_indices.iter().map(|&index| row[index]).collect();
 
             X.push(features);
@@ -59,14 +57,16 @@ pub fn load_from_csv(
 
     if shuffle {
         let mut rng = rand::rngs::StdRng::seed_from_u64(random_seed.unwrap_or(0));
-        
         for i in 0..X.len() {
             let random_index = rng.gen_range(0..X.len());
-            // do a swap
             X.swap(i, random_index);
             Y.swap(i, random_index);
         }
     }
 
-    Ok((X, Y))
+    let split_index = (X.len() as f32 * train_split).round() as usize;
+    let (x_train, x_test) = X.split_at(split_index);
+    let (y_train, y_test) = Y.split_at(split_index);
+
+    Ok((x_train.to_vec(), x_test.to_vec(), y_train.to_vec(), y_test.to_vec()))
 }

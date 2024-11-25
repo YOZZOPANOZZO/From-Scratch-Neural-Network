@@ -18,8 +18,15 @@ fn main() {
     println!("Features: {:?}", features);
     println!("Targets: {:?}", targets);
 
-    let (X_train, Y_train) = loader::load_from_csv(file_path, features, targets, true, None).unwrap(); 
+    let (
+        X_train,
+        X_test,
+        Y_train,
+        Y_test,
+    ) = loader::load_from_csv(file_path, features, targets, true, None, 0.8).unwrap(); 
 
-    println!("X_train: {:?}", X_train);
-    println!("Y_train: {:?}", Y_train);
+    println!("X_train: {:?}", X_train.len());
+    println!("Y_train: {:?}", Y_train.len());
+    println!("X_test: {:?}", X_test.len());
+    println!("Y_test: {:?}", Y_test.len());
 }
